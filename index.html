@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roleta PNAAT - Game Show</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a252f;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            color: #f1c40f;
+            text-transform: uppercase;
+            font-size: 2.5rem;
+            text-shadow: 3px 3px #000;
+            margin-bottom: 5px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #bdc3c7;
+        }
+
+        #wheel-container {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        canvas {
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            border: 8px solid #f1c40f;
+            background-color: #34495e;
+        }
+
+        /* Ponteiro na direita (3 horas) */
+        #pointer {
+            position: absolute;
+            top: 50%;
+            right: -25px;
+            transform: translateY(-50%);
+            width: 0; 
+            height: 0; 
+            border-top: 25px solid transparent;
+            border-bottom: 25px solid transparent;
+            border-right: 40px solid #e74c3c;
+            z-index: 10;
+            filter: drop-shadow(-3px 0px 2px rgba(0,0,0,0.5));
+        }
+
+        #spin-btn {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border-radius: 10px;
+            font-weight: bold;
+            box-shadow: 0 6px #1e8449;
+            text-transform: uppercase;
+            transition: all 0.1s;
+            margin-top: 20px;
+        }
+
+        #spin-btn:active {
+            transform: translateY(6px);
+            box-shadow: none;
+        }
+
+        #spin-btn:disabled {
+            background-color: #7f8c8d;
+            box-shadow: 0 6px #555;
+            cursor: not-allowed;
+        }
+
+        /* Janela Modal da Pergunta */
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 50;
+        }
+
+        #modal {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ecf0f1;
+            color: #2c3e50;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0,0,0,1);
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            z-index: 100;
+        }
+
+        #modal h2 {
+            margin-top: 0;
+            color: #e74c3c;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+
+        #question-text {
+            font-size: 1.5rem;
+            margin: 30px 0;
+            font-weight: bold;
+        }
+
+        #answer-text {
+            display: none;
+            font-size: 1.4rem;
+            color: #27ae60;
+            margin: 20px 0;
+            padding: 15px;
+            background: #e8f8f5;
+            border-radius: 8px;
+            border: 2px dashed #27ae60;
+        }
+
+        .modal-btn {
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            color: white;
+            margin: 5px;
+        }
+
+        .btn-show { background-color: #3498db; box-shadow: 0 4px #2980b9; }
+        .btn-close { background-color: #e74c3c; box-shadow: 0 4px #c0392b; }
+        .modal-btn:active { transform: translateY(4px); box-shadow: none; }
+
+    </style>
+</head>
+<body>
+
+    <h1>🎮 Game Show PNAAT</h1>
+    <p>Gire a roleta e teste seus conhecimentos em Sistemas Embarcados!</p>
+
+    <div id="wheel-container">
+        <div id="pointer"></div>
+        <canvas id="wheelCanvas" width="500" height="500"></canvas>
+    </div>
+
+    <button id="spin-btn" onclick="spinWheel()">Rodar a Roleta!</button>
+
+    <!-- Estrutura do Modal (Popup da pergunta) -->
+    <div id="overlay"></div>
+    <div id="modal">
+        <h2 id="modal-category">Categoria</h2>
+        <div id="question-text">A pergunta vai aparecer aqui.</div>
+        <div id="answer-text">A resposta correta vai aparecer aqui.</div>
+        
+        <button class="modal-btn btn-show" id="btn-show-answer" onclick="showAnswer()">Ver Resposta</button>
+        <button class="modal-btn btn-close" onclick="closeModal()">Continuar</button>
+    </div>
+
+    <script>
+        // Banco de Dados das Perguntas (Cópia mutável)
+        let questions = [
+            { cat: "Hardware 100", q: "O que significa a sigla MCU?", a: "Microcontroller Unit (Microcontrolador).", color: "#e74c3c" },
+            { cat: "IoT 100", q: "O que significa a sigla IoT?", a: "Internet das Coisas (Internet of Things).", color: "#8e44ad" },
+            { cat: "Sensores 100", q: "Qual grandeza o sensor DHT11 ou DS18B20 mede?", a: "Temperatura (e umidade no caso do DHT).", color: "#3498db" },
+            { cat: "PNAAT 100", q: "O que significa a sigla PNAAT?", a: "Programa Nacional de Aprendizado Acelerado em Tecnologia.", color: "#16a085" },
+            { cat: "Hardware 200", q: "Qual o microcontrolador fabricado pela Raspberry Pi usado no Nano Connect?", a: "RP2040.", color: "#d35400" },
+            { cat: "IoT 200", q: "Qual o protocolo leve de mensagens muito usado em IoT (baseado em pub/sub)?", a: "MQTT.", color: "#9b59b6" },
+            { cat: "Sensores 200", q: "O sensor MAX30102 é utilizado para monitorar quais parâmetros biológicos?", a: "Frequência cardíaca (Batimentos) e Oximetria.", color: "#2980b9" },
+            { cat: "PNAAT 200", q: "Como se chama a etapa presencial em laboratório focada em prototipação no PNAAT?", a: "Intensivo Maker.", color: "#27ae60" },
+            { cat: "Hardware 300", q: "Qual a diferença entre a memória RAM e a memória Flash no microcontrolador?", a: "RAM é volátil (usada na execução), Flash é não-volátil (armazena o código).", color: "#c0392b" },
+            { cat: "IoT 300", q: "Em uma rede MQTT, qual é a função do 'Broker'?", a: "Receber mensagens dos publishers e distribuí-las aos subscribers.", color: "#8e44ad" },
+            { cat: "Sensores 300", q: "Em sistemas I2C, os pinos SDA e SCL servem para quê?", a: "SDA: Dados (Serial Data). SCL: Relógio (Serial Clock).", color: "#2c3e50" },
+            { cat: "PNAAT 300", q: "No PNAAT, como se chama a etapa em que os alunos resolvem desafios reais do mercado?", a: "Residência Tecnológica (ou Empresa Residente).", color: "#f39c12" }
+        ];
+
+        // Configurações do Canvas
+        const canvas = document.getElementById("wheelCanvas");
+        const ctx = canvas.getContext("2d");
+        const center = canvas.width / 2;
+        
+        // Variáveis dinâmicas
+        let slices = questions.length;
+        let sliceAngle = (2 * Math.PI) / slices;
+        let currentAngle = 0;
+        let spinSpeed = 0;
+        let isSpinning = false;
+        let animationFrameId;
+        let lastWinningIndex = -1; // Armazena o índice da pergunta sorteada
+
+        // Desenhar a Roleta
+        function drawWheel() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (questions.length === 0) {
+                // Roleta vazia (Fim de Jogo)
+                ctx.beginPath();
+                ctx.arc(center, center, center, 0, 2 * Math.PI);
+                ctx.fillStyle = "#7f8c8d";
+                ctx.fill();
+                ctx.lineWidth = 8;
+                ctx.strokeStyle = "#bdc3c7";
+                ctx.stroke();
+
+                ctx.textAlign = "center";
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 30px Segoe UI";
+                ctx.fillText("FIM DE JOGO!", center, center + 10);
+                return;
+            }
+
+            for (let i = 0; i < slices; i++) {
+                const startAngle = currentAngle + i * sliceAngle;
+                const endAngle = startAngle + sliceAngle;
+                
+                // Fatias
+                ctx.beginPath();
+                ctx.moveTo(center, center);
+                ctx.arc(center, center, center, startAngle, endAngle);
+                ctx.fillStyle = questions[i].color;
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#ecf0f1";
+                ctx.stroke();
+                
+                // Textos
+                ctx.save();
+                ctx.translate(center, center);
+                ctx.rotate(startAngle + sliceAngle / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 18px Segoe UI";
+                ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.shadowBlur = 4;
+                ctx.fillText(questions[i].cat, center - 30, 6);
+                ctx.restore();
+            }
+            
+            // Círculo central
+            ctx.beginPath();
+            ctx.arc(center, center, 40, 0, 2 * Math.PI);
+            ctx.fillStyle = "#f1c40f";
+            ctx.fill();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#fff";
+            ctx.stroke();
+        }
+
+        // Lógica de Giro
+        function spinWheel() {
+            if (isSpinning || questions.length === 0) return;
+            isSpinning = true;
+            document.getElementById("spin-btn").disabled = true;
+            
+            spinSpeed = Math.random() * 0.15 + 0.35; 
+            animateSpin();
+        }
+
+        function animateSpin() {
+            currentAngle += spinSpeed;
+            spinSpeed *= 0.985; // Fator de atrito
+            
+            drawWheel();
+            
+            if (spinSpeed > 0.002) {
+                animationFrameId = requestAnimationFrame(animateSpin);
+            } else {
+                isSpinning = false;
+                determineWinner();
+            }
+        }
+
+        function determineWinner() {
+            let normalizedAngle = currentAngle % (2 * Math.PI);
+            if (normalizedAngle < 0) normalizedAngle += 2 * Math.PI;
+            
+            lastWinningIndex = Math.floor(((2 * Math.PI - normalizedAngle) % (2 * Math.PI)) / sliceAngle);
+            openModal(questions[lastWinningIndex]);
+        }
+
+        // Funções da Interface (Modal)
+        function openModal(questionObj) {
+            document.getElementById("modal-category").innerText = "🏆 " + questionObj.cat;
+            document.getElementById("question-text").innerText = questionObj.q;
+            document.getElementById("answer-text").innerText = questionObj.a;
+            
+            document.getElementById("answer-text").style.display = "none";
+            document.getElementById("btn-show-answer").style.display = "inline-block";
+            
+            document.getElementById("overlay").style.display = "block";
+            document.getElementById("modal").style.display = "block";
+        }
+
+        function showAnswer() {
+            document.getElementById("answer-text").style.display = "block";
+            document.getElementById("btn-show-answer").style.display = "none";
+        }
+
+        function closeModal() {
+            document.getElementById("overlay").style.display = "none";
+            document.getElementById("modal").style.display = "none";
+
+            // Remove a pergunta sorteada do array
+            if (lastWinningIndex > -1) {
+                questions.splice(lastWinningIndex, 1);
+                lastWinningIndex = -1; // Reseta o índice
+            }
+
+            // Atualiza as fatias e ângulos
+            slices = questions.length;
+            
+            if (slices > 0) {
+                sliceAngle = (2 * Math.PI) / slices;
+                document.getElementById("spin-btn").disabled = false;
+            } else {
+                // Acabaram as perguntas
+                document.getElementById("spin-btn").innerText = "Perguntas Esgotadas!";
+                document.getElementById("spin-btn").disabled = true;
+                document.getElementById("pointer").style.display = "none"; // Oculta o ponteiro
+            }
+            
+            drawWheel(); // Redesenha a roleta atualizada
+        }
+
+        // Desenhar roleta inicial
+        drawWheel();
+
+    </script>
+</body>
+</html>
