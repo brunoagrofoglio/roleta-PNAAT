@@ -177,19 +177,36 @@
     <script>
         // Banco de Dados das Perguntas (Cópia mutável)
         let questions = [
-            { cat: "Hardware 100", q: "O que significa a sigla MCU?", a: "Microcontroller Unit (Microcontrolador).", color: "#e74c3c" },
-            { cat: "IoT 100", q: "O que significa a sigla IoT?", a: "Internet das Coisas (Internet of Things).", color: "#8e44ad" },
-            { cat: "Sensores 100", q: "Qual grandeza o sensor DHT11 ou DS18B20 mede?", a: "Temperatura (e umidade no caso do DHT).", color: "#3498db" },
-            { cat: "PNAAT 100", q: "O que significa a sigla PNAAT?", a: "Programa Nacional de Aprendizado Acelerado em Tecnologia.", color: "#16a085" },
-            { cat: "Hardware 200", q: "Qual o microcontrolador fabricado pela Raspberry Pi usado no Nano Connect?", a: "RP2040.", color: "#d35400" },
-            { cat: "IoT 200", q: "Qual o protocolo leve de mensagens muito usado em IoT (baseado em pub/sub)?", a: "MQTT.", color: "#9b59b6" },
-            { cat: "Sensores 200", q: "O sensor MAX30102 é utilizado para monitorar quais parâmetros biológicos?", a: "Frequência cardíaca (Batimentos) e Oximetria.", color: "#2980b9" },
-            { cat: "PNAAT 200", q: "Como se chama a etapa presencial em laboratório focada em prototipação no PNAAT?", a: "Intensivo Maker.", color: "#27ae60" },
-            { cat: "Hardware 300", q: "Qual a diferença entre a memória RAM e a memória Flash no microcontrolador?", a: "RAM é volátil (usada na execução), Flash é não-volátil (armazena o código).", color: "#c0392b" },
-            { cat: "IoT 300", q: "Em uma rede MQTT, qual é a função do 'Broker'?", a: "Receber mensagens dos publishers e distribuí-las aos subscribers.", color: "#8e44ad" },
-            { cat: "Sensores 300", q: "Em sistemas I2C, os pinos SDA e SCL servem para quê?", a: "SDA: Dados (Serial Data). SCL: Relógio (Serial Clock).", color: "#2c3e50" },
-            { cat: "PNAAT 300", q: "No PNAAT, como se chama a etapa em que os alunos resolvem desafios reais do mercado?", a: "Residência Tecnológica (ou Empresa Residente).", color: "#f39c12" }
-        ];
+    // --- 100 PONTOS ---
+    { cat: "Hardware 100", q: "O que significa a sigla MCU?", a: "Microcontroller Unit (Microcontrolador).", color: "#e74c3c" },
+    { cat: "IoT 100", q: "O que significa a sigla IoT?", a: "Internet das Coisas (Internet of Things).", color: "#8e44ad" },
+    { cat: "Sensores 100", q: "Qual grandeza o sensor DHT11 e o DS18B20 medem?", a: "Temperatura em ambos (e também umidade no caso do DHT).", color: "#3498db" },
+    { cat: "PNAAT 100", q: "O que significa a sigla PNAAT?", a: "Programa Nacional de Aprendizado Acelerado em Tecnologia.", color: "#16a085" },
+
+    // --- 200 PONTOS ---
+    { cat: "Hardware 200", q: "Qual o microcontrolador fabricado pela Raspberry Pi usado no Nano Connect?", a: "RP2040.", color: "#d35400" },
+    { cat: "IoT 200", q: "Qual o protocolo leve de mensagens muito usado em IoT (baseado em pub/sub)?", a: "MQTT.", color: "#9b59b6" },
+    { cat: "Sensores 200", q: "O sensor MAX30102 é utilizado para monitorar quais parâmetros biológicos?", a: "Frequência cardíaca (Batimentos) e Oximetria.", color: "#2980b9" },
+    { cat: "PNAAT 200", q: "Quem criou e realiza o PNAAT?", a: "O FIT - Flextronics Instituto de Tecnologia.", color: "#27ae60" },
+
+    // --- 300 PONTOS ---
+    { cat: "Hardware 300", q: "Qual a diferença entre a memória RAM e a memória Flash no microcontrolador?", a: "RAM é volátil (usada na execução), Flash é não-volátil (armazena o código).", color: "#c0392b" },
+    { cat: "IoT 300", q: "Em uma rede MQTT, qual é a função do 'Broker'?", a: "Receber mensagens dos publishers e distribuí-las aos subscribers.", color: "#8e44ad" },
+    { cat: "Sensores 300", q: "Em sistemas I^2C, os pinos SDA e SCL servem para quê?", a: "SDA: Dados (Serial Data). SCL: Relógio (Serial Clock).", color: "#2c3e50" },
+    { cat: "PNAAT 300", q: "Quem pode participar do PNAAT?", a: "Estudantes e egressos do ensino médio técnico, graduação e pós-graduação.", color: "#f39c12" },
+
+    // --- 400 PONTOS (NOVAS) ---
+    { cat: "Hardware 400", q: "Qual a função do pino 'EN' (ou Reset) presente em placas como o ESP32?", a: "Reiniciar o microcontrolador (habilitar ou colocá-lo em estado inicial).", color: "#e67e22" },
+    { cat: "IoT 400", q: "O que caracteriza uma rede LPWAN, muito utilizada em projetos de Smart Cities?", a: "Baixo consumo de energia e longo alcance de comunicação.", color: "#2ecc71" },
+    { cat: "Sensores 400", q: "O sensor ultrassônico HC-SR04 utiliza qual princípio físico para medir distância?", a: "Ecolocalização (tempo de ida e volta das ondas sonoras).", color: "#1abc9c" },
+    { cat: "PNAAT 400", q: "Quais regiões do Brasil são elegíveis à bolsas do PNAAT?", a: "Norte, nordeste e centro-oeste do Brasil.", color: "#d35400" },
+
+    // --- 500 PONTOS (DESAFIO MESTRE) ---
+    { cat: "Hardware 500", q: "O que é um 'Watchdog Timer' e para que serve em sistemas embarcados?", a: "Um temporizador que reseta o sistema se o código travar ou entrar em loop infinito.", color: "#c0392b" },
+    { cat: "IoT 500", q: "No protocolo MQTT, o que significa o parâmetro 'QoS' (Quality of Service)?", a: "Garantia de entrega da mensagem (níveis 0, 1 ou 2).", color: "#8e44ad" },
+    { cat: "Sensores 500", q: "Qual a principal diferença entre um sensor analógico e um sensor digital?", a: "O analógico envia tensão contínua proporcional à grandeza medida; o digital envia sinais discretos ou dados processados (0s e 1s).", color: "#2980b9" },
+    { cat: "PNAAT 500", q: "O PNAAT utiliza qual abordagem educacional para acelerar o aprendizado?", a: "Educação Baseada em Projetos (PBL) e Aprendizado Prático (Hands-on).", color: "#27ae60" }
+];
 
         // Configurações do Canvas
         const canvas = document.getElementById("wheelCanvas");
